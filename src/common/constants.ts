@@ -1,0 +1,1 @@
+export const LENGTH_RANDOM_HASH = 6
