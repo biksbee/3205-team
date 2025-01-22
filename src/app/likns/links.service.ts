@@ -33,9 +33,8 @@ export class LinksService {
       .createHmac('md5', secret)
       .update(data.originalUrl)
       .digest('base64url');
-    const expiresAt = data.expiresAt
-        ? Moment().add(data.expiresAt, 'ms').toDate()
-        : Moment().add(this.configService.get<string>('LINK_LIFITIME'), 'ms').toDate()
+    const lifetime = data.expiresAt ? ms(data.expiresAt as ms.StringValue) : ms(this.configService.get<string>('LINK_LIFITIME') as ms.StringValue)
+    const expiresAt = Moment().add(lifetime, 'ms').toDate();
     const obj = {
       originalUrl: data.originalUrl,
       shortUrl: hashUrl,
