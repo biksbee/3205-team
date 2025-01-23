@@ -1,10 +1,10 @@
 services:
   db:
-    image:  mysql:8.0
+    image: mysql:8.0
     container_name: mysql-container
     environment:
       MYSQL_ROOT_PASSWORD: cat8apple10wheel
-      MYSQL_DATABASE: 3205-team
+      MYSQL_DATABASE: da-enterprises-llc
     ports:
       - "3316:3306"
     command: --character-set-server=utf8 --collation-server=utf8_general_ci
@@ -12,11 +12,12 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - app-network
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nestJs-app-3205-team
+    container_name: nest-app-3205-team
     ports:
       - "30110:30110"
     volumes:
@@ -35,10 +36,11 @@ services:
     networks:
       - app-network
     command: ["sh", "-c", "npm install && npm run build && npm start"]
-  volumes:
-    db_data:
-      driver: local
 
-  networks:
-    app-network:
-      driver: bridge
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
