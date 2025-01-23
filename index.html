@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
   <title>Link Management</title>
   <style>
       body {
@@ -100,22 +102,24 @@
   }
 
   async function redirect() {
-    const shortUrl = document.getElementById('shortUrlRedirect').value;
-    const response = await fetch(baseUrl + `/${shortUrl}`, {
-      method: 'GET',
-      mode: 'cors',
-      redirect: 'manual',
-    })
-    if (response.status === 301 || response.status === 302) {
-      const redirectUrl = response.headers.get('Location');
-      alert(redirectUrl);
-      if (redirectUrl) {
-        window.location.href = redirectUrl; // Перенаправляем пользователя
-      } else {
-        alert('Редирект не найден');
+    try {
+      const shortUrl = document.getElementById('shortUrlRedirect').value;
+      const response = await axios.get(`http://localhost:30110/links/${shortUrl}`, {
+        maxRedirects: 0,
+      })
+      if (response.status === 301 || response.status === 302) {
+        const redirectUrl = response.headers('location');
+        alert(redirectUrl);
+        if (redirectUrl) {
+          window.location.href = redirectUrl; // Перенаправляем пользователя
+        } else {
+          alert('Редирект не найден');
+        }
+      }  else {
+        alert('Ошибка: ' + response.statusText);
       }
-    }  else {
-      alert('Ошибка: ' + response.statusText);
+    } catch (error) {
+      console.error('Ошибка при выполнении редиректа:', error.message);
     }
   }
 
