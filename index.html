@@ -81,7 +81,7 @@
 </div>
 
 <script>
-  const baseUrl = 'http://localhost:30110/links'; // Replace with your actual API URL
+  const baseUrl = 'http://localhost:30110/links';
 
   async function handleSubmit(event, endpoint, method, body = null, responseElement) {
     event.preventDefault();
@@ -92,16 +92,6 @@
         options.body = JSON.stringify(body);
       }
       const response = await fetch(baseUrl + endpoint, options);
-      console.log('1')
-      if (response.status === 302) {
-        console.log('2')
-        const location = response.headers.get('Location');
-        if (location) {
-          window.location.href = location; // Перенаправляем пользователя
-        } else {
-          document.getElementById('redirectResponse').innerText = 'Error: Location header is missing';
-        }
-      }
       const data = await response.json();
       document.getElementById(responseElement).innerText = JSON.stringify(data, null, 2);
     } catch (error) {
@@ -113,8 +103,20 @@
     const shortUrl = document.getElementById('shortUrlRedirect').value;
     const response = await fetch(baseUrl + `/${shortUrl}`, {
       method: 'GET',
-      mode: 'cors'
+      mode: 'cors',
+      redirect: 'manual',
     })
+    if (response.status === 301 || response.status === 302) {
+      const redirectUrl = response.headers.get('Location');
+      alert(redirectUrl);
+      if (redirectUrl) {
+        window.location.href = redirectUrl; // Перенаправляем пользователя
+      } else {
+        alert('Редирект не найден');
+      }
+    }  else {
+      alert('Ошибка: ' + response.statusText);
+    }
   }
 
   // Get Info
