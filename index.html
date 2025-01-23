@@ -31,7 +31,7 @@
   <form id="redirectForm">
     <label for="shortUrlRedirect">Short URL:</label>
     <input type="text" id="shortUrlRedirect" name="shortUrlRedirect" required>
-    <button type="submit">Redirect</button>
+    <button onclick="redirect()" type="submit">Redirect</button>
   </form>
   <div class="response" id="redirectResponse"></div>
 </div>
@@ -109,11 +109,13 @@
     }
   }
 
-  // Redirect
-  document.getElementById('redirectForm').addEventListener('submit', (event) => {
+  async function redirect() {
     const shortUrl = document.getElementById('shortUrlRedirect').value;
-    handleSubmit(event, `/${shortUrl}`, 'GET', null, 'redirectResponse');
-  });
+    const response = await fetch(baseUrl + `/${shortUrl}`, {
+      method: 'GET',
+      mode: 'cors'
+    })
+  }
 
   // Get Info
   document.getElementById('infoForm').addEventListener('submit', (event) => {

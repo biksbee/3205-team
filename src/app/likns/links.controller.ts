@@ -32,6 +32,8 @@ export class LinksController {
         const ip = request.ip;
         const fingerprint = request.fingerprint.hash;
         const link = await this.linksService.redirect(shortUrl, ip, fingerprint)
+        response.setHeader('Access-Control-Allow-Methods', 'GET');
+        response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
         return response.status(301).redirect(link.originalUrl)
     }
 
