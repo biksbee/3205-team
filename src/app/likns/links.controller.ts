@@ -4,10 +4,10 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
     CreateShortLinkResponse,
     DeleteLinkResponse,
-    GetAnalyticsLinkResponse, GetInfoShortLinkResponse,
+    GetAnalyticsLinkResponse, GetInfoShortLinkResponse, LinksListResponse,
 } from './links.response';
 import { LinksService } from './links.service';
-import { CreateShortLinkDto, RedirectByShortLinkDto } from './links.dto';
+import { CreateShortLinkDto, ListLinkDto, RedirectByShortLinkDto } from './links.dto';
 
 
 @ApiTags('Ссылки')
@@ -30,7 +30,8 @@ export class LinksController {
       @Res() response: Response
     ): Promise<void> {
         const ip = request.ip;
-        const link = await this.linksService.redirect(shortUrl, ip)
+        const fingerprint = request.fingerprint.hash;
+        const link = await this.linksService.redirect(shortUrl, ip, fingerprint)
         return response.redirect(link.originalUrl)
     }
 
@@ -82,6 +83,22 @@ export class LinksController {
     ): Promise<CreateShortLinkResponse> {
         const fingerprint = request.fingerprint.hash;
         return await this.linksService.create({ fingerprint, ...dto })
+    }
+
+    @Post('/list')
+    @ApiOperation({
+        summary: 'Получения списка ссылок',
+        description: 'Этот эндпоинт позволяет получить список ссылок хранящихся в базе'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Список ссылок',
+        type: LinksListResponse
+    })
+    async list(
+      @Body() dto: ListLinkDto
+    ): Promise<LinksListResponse> {
+        return await this.linksService.list(dto)
     }
 
     @Delete('/delete/:shortUrl')

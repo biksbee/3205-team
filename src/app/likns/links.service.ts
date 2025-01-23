@@ -1,17 +1,17 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { GoneException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   CreateShortLinkResponse,
   DeleteLinkResponse,
   GetAnalyticsLinkResponse,
-  GetInfoShortLinkResponse,
+  GetInfoShortLinkResponse, LinksListResponse,
 } from './links.response';
-import { LinkCreateType } from './links.type';
+import { LinkCreateType, ListLinksType } from './links.type';
 import { randomString } from '../../common/tool';
 import * as crypto from 'crypto';
 import { InjectModel } from '@nestjs/sequelize';
 import { LinksModel } from './models/links.model';
 import { IpAddressesModel } from './models/ip-addresses.model';
-import { OrderItem } from 'sequelize';
+import { OrderItem, WhereOptions } from 'sequelize';
 import * as Moment from 'moment';
 import ms = require('ms');
 import { ConfigService } from '@nestjs/config';
@@ -41,10 +41,10 @@ export class LinksService {
       expiresAt
     };
     const link = await this.linksModel.create(obj);
-    return { shortLink: link.shortUrl };
+    return { shortUrl: link.shortUrl };
   }
 
-  async redirect(shortUrl: string, ip: string | null = null): Promise<GetInfoShortLinkResponse> {
+  async redirect(shortUrl: string, ip: string | null = null, fingerprint?): Promise<GetInfoShortLinkResponse> {
     const link = await this.linksModel.findOne({
       where: { shortUrl },
     });
@@ -53,11 +53,11 @@ export class LinksService {
     }
     if (ip && typeof ip === 'string') {
       if(Moment().isSameOrAfter(link.expiresAt)) {
-        throw new UnauthorizedException('Link was expired');
+        throw new GoneException('Link was expired');
       }
       link.clickCount += 1;
       await Promise.all([
-        await this.ipAddressesModel.create({ ip, linkId: link.id }),
+        await this.ipAddressesModel.create({ ip, linkId: link.id, fingerprint }),
         await link.update({ clickCount: link.clickCount }),
       ]);
     }
@@ -82,6 +82,30 @@ export class LinksService {
       clickCount: link.clickCount,
       ips: ips.map(ip => ip.ip)
     };
+  }
+
+  async list (data: ListLinksType): Promise<LinksListResponse> {
+    const orderIp: OrderItem[] | undefined =
+      data?.orderIp?.field && data?.orderIp?.by ? [[data?.orderIp.field, data?.orderIp.by]] : undefined;
+    const order: OrderItem[] | undefined =
+      data?.order?.field && data?.order?.by ? [[data?.order.field, data?.order.by]] : undefined;
+    const where: WhereOptions = {
+      ...data?.filter ? {...data?.filter} : {},
+    }
+    return await this.linksModel.findAndCountAll({
+      include: [
+        {
+          model: IpAddressesModel,
+          as: 'ips',
+          order: orderIp,
+          limit: data?.paginationIp?.limit,
+        }
+      ],
+      where,
+      order,
+      limit: data?.pagination?.limit,
+      offset: data?.pagination?.offset
+    })
   }
 
   async delete(shortUrl: string): Promise<DeleteLinkResponse> {
