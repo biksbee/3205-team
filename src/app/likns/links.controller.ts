@@ -32,7 +32,7 @@ export class LinksController {
         const ip = request.ip;
         const fingerprint = request.fingerprint.hash;
         const link = await this.linksService.redirect(shortUrl, ip, fingerprint)
-        return response.redirect(link.originalUrl)
+        return response.status(301).redirect(link.originalUrl)
     }
 
     @Get('/info/:shortUrl')

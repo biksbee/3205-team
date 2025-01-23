@@ -2,9 +2,9 @@ services:
   db:
     image: mysql:8.0
     container_name: mysql-container
-    environment:
-      MYSQL_ROOT_PASSWORD: cat8apple10wheel
-      MYSQL_DATABASE: 3205-team
+    restart: always
+    env_file:
+      - .env
     ports:
       - "3316:3306"
     command: --character-set-server=utf8 --collation-server=utf8_general_ci
@@ -25,7 +25,7 @@ services:
       - /app/node_modules
     environment:
       - PORT=30110
-      - DATABASE_PORT=3316
+      - DATABASE_PORT=3306
       - DATABASE_HOST=db
       - DATABASE_USER=root
       - DATABASE_PASSWORD=cat8apple10wheel

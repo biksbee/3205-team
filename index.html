@@ -92,6 +92,16 @@
         options.body = JSON.stringify(body);
       }
       const response = await fetch(baseUrl + endpoint, options);
+      console.log('1')
+      if (response.status === 302) {
+        console.log('2')
+        const location = response.headers.get('Location');
+        if (location) {
+          window.location.href = location; // Перенаправляем пользователя
+        } else {
+          document.getElementById('redirectResponse').innerText = 'Error: Location header is missing';
+        }
+      }
       const data = await response.json();
       document.getElementById(responseElement).innerText = JSON.stringify(data, null, 2);
     } catch (error) {
