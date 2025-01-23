@@ -26,7 +26,7 @@ services:
     environment:
       - PORT=30110
       - DATABASE_PORT=3316
-      - DATABASE_HOST=localhost
+      - DATABASE_HOST=db
       - DATABASE_USER=root
       - DATABASE_PASSWORD=cat8apple10wheel
       - DATABASE_DB=3205-team

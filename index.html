@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Link Management</title>
+  <style>
+      body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+      }
+
+      .section {
+          margin-bottom: 20px;
+      }
+
+      .response {
+          margin-top: 10px;
+          padding: 10px;
+          border: 1px solid #ccc;
+          background-color: #f9f9f9;
+      }
+  </style>
+</head>
+<body>
+<h1>Link Management</h1>
+
+<!-- Redirect by Short URL -->
+<div class="section">
+  <h2>Redirect</h2>
+  <form id="redirectForm">
+    <label for="shortUrlRedirect">Short URL:</label>
+    <input type="text" id="shortUrlRedirect" name="shortUrlRedirect" required>
+    <button type="submit">Redirect</button>
+  </form>
+  <div class="response" id="redirectResponse"></div>
+</div>
+
+<!-- Get Info by Short URL -->
+<div class="section">
+  <h2>Get Link Info</h2>
+  <form id="infoForm">
+    <label for="shortUrlInfo">Short URL:</label>
+    <input type="text" id="shortUrlInfo" name="shortUrlInfo" required>
+    <button type="submit">Get Info</button>
+  </form>
+  <div class="response" id="infoResponse"></div>
+</div>
+
+<!-- Get Analytics by Short URL -->
+<div class="section">
+  <h2>Get Analytics</h2>
+  <form id="analyticsForm">
+    <label for="shortUrlAnalytics">Short URL:</label>
+    <input type="text" id="shortUrlAnalytics" name="shortUrlAnalytics" required>
+    <button type="submit">Get Analytics</button>
+  </form>
+  <div class="response" id="analyticsResponse"></div>
+</div>
+
+<!-- Create Short Link -->
+<div class="section">
+  <h2>Create Short Link</h2>
+  <form id="createForm">
+    <label for="originalUrl">Original URL:</label>
+    <input type="url" id="originalUrl" name="originalUrl" required>
+    <button type="submit">Create</button>
+  </form>
+  <div class="response" id="createResponse"></div>
+</div>
+
+<!-- Delete Short Link -->
+<div class="section">
+  <h2>Delete Short Link</h2>
+  <form id="deleteForm">
+    <label for="shortUrlDelete">Short URL:</label>
+    <input type="text" id="shortUrlDelete" name="shortUrlDelete" required>
+    <button type="submit">Delete</button>
+  </form>
+  <div class="response" id="deleteResponse"></div>
+</div>
+
+<script>
+  const baseUrl = 'http://localhost:30110/links'; // Replace with your actual API URL
+
+  async function handleSubmit(event, endpoint, method, body = null, responseElement) {
+    event.preventDefault();
+    try {
+      const options = { method };
+      if (body) {
+        options.headers = { 'Content-Type': 'application/json' };
+        options.body = JSON.stringify(body);
+      }
+      const response = await fetch(baseUrl + endpoint, options);
+      const data = await response.json();
+      document.getElementById(responseElement).innerText = JSON.stringify(data, null, 2);
+    } catch (error) {
+      document.getElementById(responseElement).innerText = `Error: ${error.message}`;
+    }
+  }
+
+  // Redirect
+  document.getElementById('redirectForm').addEventListener('submit', (event) => {
+    const shortUrl = document.getElementById('shortUrlRedirect').value;
+    handleSubmit(event, `/${shortUrl}`, 'GET', null, 'redirectResponse');
+  });
+
+  // Get Info
+  document.getElementById('infoForm').addEventListener('submit', (event) => {
+    const shortUrl = document.getElementById('shortUrlInfo').value;
+    handleSubmit(event, `/info/${shortUrl}`, 'GET', null, 'infoResponse');
+  });
+
+  // Get Analytics
+  document.getElementById('analyticsForm').addEventListener('submit', (event) => {
+    const shortUrl = document.getElementById('shortUrlAnalytics').value;
+    handleSubmit(event, `/analytics/${shortUrl}`, 'GET', null, 'analyticsResponse');
+  });
+
+  // Create Short Link
+  document.getElementById('createForm').addEventListener('submit', (event) => {
+    const originalUrl = document.getElementById('originalUrl').value;
+    handleSubmit(event, '/shorten', 'POST', { originalUrl }, 'createResponse');
+  });
+
+  // Get Links List
+  document.getElementById('listForm').addEventListener('submit', (event) => {
+    handleSubmit(event, '/list', 'POST', {}, 'listResponse');
+  });
+
+  // Delete Short Link
+  document.getElementById('deleteForm').addEventListener('submit', (event) => {
+    const shortUrl = document.getElementById('shortUrlDelete').value;
+    handleSubmit(event, `/delete/${shortUrl}`, 'DELETE', null, 'deleteResponse');
+  });
+</script>
+</body>
+</html>
